@@ -20,6 +20,9 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
     
+    private val _orderSummary = MutableStateFlow("")
+    val orderSummary: StateFlow<String> = _orderSummary.asStateFlow()
+    
     init {
         loadItems()
     }
@@ -47,6 +50,19 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
     
     private fun updateTotalCount() {
         _totalCount.value = _itemCounts.value.values.sum()
+        updateOrderSummary()
+    }
+    
+    private fun updateOrderSummary() {
+        val itemsWithCounts = _itemCounts.value.filter { it.value > 0 }
+        val itemsMap = _items.value.associateBy { it.id }
+        
+        val summary = itemsWithCounts.map { (itemId, count) ->
+            val itemName = itemsMap[itemId]?.text ?: "Unknown"
+            "• $itemName: $count"
+        }.joinToString("\n")
+        
+        _orderSummary.value = summary
     }
     
     fun resetCounts() {

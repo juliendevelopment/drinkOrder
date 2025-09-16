@@ -56,6 +56,7 @@ fun GridScreen(repository: ListRepository) {
     val items by viewModel.items.collectAsState()
     val itemCounts by viewModel.itemCounts.collectAsState()
     val totalCount by viewModel.totalCount.collectAsState()
+    val orderSummary by viewModel.orderSummary.collectAsState()
 
     Column(
         modifier = Modifier
@@ -90,8 +91,27 @@ fun GridScreen(repository: ListRepository) {
             text = "Total Items: $totalCount",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+        
+        if (orderSummary.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Text(
+                    text = orderSummary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
         
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
