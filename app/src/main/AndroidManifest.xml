@@ -22,6 +22,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ListActivity"
+            android:exported="false"
+            android:label="My List"
+            android:theme="@style/Theme.DrinkOrder" />
     </application>
 
 </manifest>

@@ -1,17 +1,17 @@
 package com.drinkorder
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.drinkorder.ui.theme.DrinkOrderTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,11 +32,31 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DrinkOrderApp() {
+    val context = LocalContext.current
+    
     Scaffold { innerPadding ->
-        Greeting(
-            name = "Drink Order",
-            modifier = Modifier.padding(innerPadding)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Greeting(name = "Drink Order")
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Button(
+                onClick = {
+                    val intent = Intent(context, ListActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Open My List")
+            }
+        }
     }
 }
 
@@ -44,6 +64,7 @@ fun DrinkOrderApp() {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Welcome to $name!",
+        style = MaterialTheme.typography.headlineMedium,
         modifier = modifier
     )
 }
