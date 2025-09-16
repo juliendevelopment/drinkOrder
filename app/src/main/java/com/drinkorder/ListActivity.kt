@@ -1,5 +1,6 @@
 package com.drinkorder
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,11 +12,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,6 +51,7 @@ class ListActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(repository: ListRepository) {
+    val context = LocalContext.current
     val viewModel: ListViewModel = viewModel(
         factory = ListViewModelFactory(repository)
     )
@@ -68,12 +72,29 @@ fun ListScreen(repository: ListRepository) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "My List",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "My List",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            FloatingActionButton(
+                onClick = {
+                    val intent = Intent(context, GridActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(Icons.Default.Menu, contentDescription = "Grid View")
+            }
+        }
         
         // Add item section
         Row(

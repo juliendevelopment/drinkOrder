@@ -27,6 +27,11 @@
             android:exported="false"
             android:label="My List"
             android:theme="@style/Theme.DrinkOrder" />
+        <activity
+            android:name=".GridActivity"
+            android:exported="false"
+            android:label="Order Grid"
+            android:theme="@style/Theme.DrinkOrder" />
     </application>
 
 </manifest>
