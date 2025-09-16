@@ -25,10 +25,16 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
     
     init {
         loadItems()
+        loadItemCounts()
     }
     
     private fun loadItems() {
         _items.value = repository.getItems()
+    }
+    
+    private fun loadItemCounts() {
+        _itemCounts.value = repository.getItemCounts()
+        updateTotalCount()
     }
     
     fun incrementItem(itemId: String) {
@@ -36,6 +42,7 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
         currentCounts[itemId] = (currentCounts[itemId] ?: 0) + 1
         _itemCounts.value = currentCounts
         updateTotalCount()
+        saveItemCounts()
     }
     
     fun decrementItem(itemId: String) {
@@ -45,6 +52,7 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
             currentCounts[itemId] = currentCount - 1
             _itemCounts.value = currentCounts
             updateTotalCount()
+            saveItemCounts()
         }
     }
     
@@ -68,6 +76,11 @@ class GridViewModel(private val repository: ListRepository) : ViewModel() {
     fun resetCounts() {
         _itemCounts.value = emptyMap()
         updateTotalCount()
+        saveItemCounts()
+    }
+    
+    private fun saveItemCounts() {
+        repository.saveItemCounts(_itemCounts.value)
     }
     
     fun getItemCount(itemId: String): Int {

@@ -76,14 +76,28 @@ fun GridScreen(repository: ListRepository) {
                 fontWeight = FontWeight.Bold
             )
             
-            FloatingActionButton(
-                onClick = {
-                    val intent = Intent(context, ListActivity::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.size(48.dp)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.List, contentDescription = "List View")
+                Button(
+                    onClick = { viewModel.resetCounts() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Reset", color = MaterialTheme.colorScheme.onError)
+                }
+                
+                FloatingActionButton(
+                    onClick = {
+                        val intent = Intent(context, ListActivity::class.java)
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(Icons.Default.List, contentDescription = "List View")
+                }
             }
         }
         

@@ -18,6 +18,7 @@ class ListRepository(context: Context) {
     
     companion object {
         private const val ITEMS_KEY = "items"
+        private const val COUNTS_KEY = "item_counts"
     }
     
     fun getItems(): List<ListItem> {
@@ -65,5 +66,21 @@ class ListRepository(context: Context) {
         }
         saveItems(reorderedItems)
         return reorderedItems
+    }
+    
+    fun getItemCounts(): Map<String, Int> {
+        val countsJson = sharedPreferences.getString(COUNTS_KEY, "{}")
+        return try {
+            json.decodeFromString<Map<String, Int>>(countsJson ?: "{}")
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+    
+    fun saveItemCounts(counts: Map<String, Int>) {
+        val countsJson = json.encodeToString(counts)
+        sharedPreferences.edit()
+            .putString(COUNTS_KEY, countsJson)
+            .apply()
     }
 }
