@@ -27,7 +27,9 @@ import com.drinkorder.data.ListItem
 import com.drinkorder.repository.ListRepository
 import com.drinkorder.ui.theme.DrinkOrderTheme
 import com.drinkorder.ui.components.SearchableIconSelector
+import com.drinkorder.ui.components.SearchableColorSelector
 import com.drinkorder.ui.components.IconPreview
+import com.drinkorder.ui.components.ColorPreview
 import com.drinkorder.viewmodel.ListViewModel
 import com.drinkorder.viewmodel.ListViewModelFactory
 import org.burnoutcrew.reorderable.*
@@ -62,11 +64,15 @@ fun ListScreen(repository: ListRepository) {
     val items by viewModel.items.collectAsState()
     val newItemText by viewModel.newItemText.collectAsState()
     val selectedIconId by viewModel.selectedIconId.collectAsState()
+    val selectedColorId by viewModel.selectedColorId.collectAsState()
     var showIconSelector by remember { mutableStateOf(false) }
+    var showColorSelector by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ListItem?>(null) }
     var editItemText by remember { mutableStateOf("") }
     var editIconId by remember { mutableStateOf("local_drink") }
+    var editColorId by remember { mutableStateOf("blue") }
     var isEditingIcon by remember { mutableStateOf(false) }
+    var isEditingColor by remember { mutableStateOf(false) }
     
     val state = rememberReorderableLazyListState(
         onMove = { from, to ->
@@ -112,13 +118,14 @@ fun ListScreen(repository: ListRepository) {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            // Icon selection row
+            // Icon and Color selection row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icon selection
                 Text(
                     text = "Icon:",
                     style = MaterialTheme.typography.labelMedium,
@@ -137,7 +144,30 @@ fun ListScreen(repository: ListRepository) {
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Change Icon")
+                    Text("Change")
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                // Color selection
+                Text(
+                    text = "Color:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                OutlinedButton(
+                    onClick = { showColorSelector = true },
+                    modifier = Modifier.height(40.dp)
+                ) {
+                    ColorPreview(
+                        colorId = selectedColorId,
+                        size = 20.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Change")
                 }
             }
             
@@ -184,6 +214,7 @@ fun ListScreen(repository: ListRepository) {
                             editingItem = item
                             editItemText = item.text
                             editIconId = item.iconId
+                            editColorId = item.colorId
                         },
                         modifier = Modifier
                             .detectReorderAfterLongPress(state)
@@ -239,6 +270,28 @@ fun ListScreen(repository: ListRepository) {
         )
     }
     
+    // Color Selector Dialog
+    if (showColorSelector) {
+        SearchableColorSelector(
+            selectedColorId = if (isEditingColor) editColorId else selectedColorId,
+            onColorSelected = { colorId ->
+                if (isEditingColor) {
+                    editColorId = colorId
+                    isEditingColor = false
+                } else {
+                    viewModel.updateSelectedColorId(colorId)
+                }
+                showColorSelector = false
+            },
+            onDismiss = { 
+                showColorSelector = false
+                if (isEditingColor) {
+                    isEditingColor = false
+                }
+            }
+        )
+    }
+    
     // Edit Item Dialog
     editingItem?.let { item ->
         AlertDialog(
@@ -246,37 +299,75 @@ fun ListScreen(repository: ListRepository) {
                 editingItem = null
                 editItemText = ""
                 editIconId = "local_drink"
+                editColorId = "blue"
             },
             title = { Text("Edit Drink") },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Icon selection section
-                    Column {
-                        Text(
-                            text = "Icon:",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        
-                        OutlinedButton(
-                            onClick = { 
-                                // Switch to edit icon mode
-                                isEditingIcon = true
-                                showIconSelector = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                    // Icon and Color selection section
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Icon selection
+                        Column(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            IconPreview(
-                                iconId = editIconId,
-                                size = 20.dp,
-                                tint = MaterialTheme.colorScheme.onSurface
+                            Text(
+                                text = "Icon:",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Change Icon")
+                            
+                            OutlinedButton(
+                                onClick = { 
+                                    isEditingIcon = true
+                                    showIconSelector = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                IconPreview(
+                                    iconId = editIconId,
+                                    size = 20.dp,
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Change")
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        // Color selection
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Color:",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            
+                            OutlinedButton(
+                                onClick = { 
+                                    isEditingColor = true
+                                    showColorSelector = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                ColorPreview(
+                                    colorId = editColorId,
+                                    size = 20.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Change")
+                            }
                         }
                     }
                     
@@ -297,11 +388,13 @@ fun ListScreen(repository: ListRepository) {
                             viewModel.updateItem(
                                 itemId = item.id,
                                 newText = editItemText.trim(),
-                                newIconId = editIconId
+                                newIconId = editIconId,
+                                newColorId = editColorId
                             )
                             editingItem = null
                             editItemText = ""
                             editIconId = "local_drink"
+                            editColorId = "blue"
                         }
                     }
                 ) {
@@ -314,6 +407,7 @@ fun ListScreen(repository: ListRepository) {
                         editingItem = null
                         editItemText = ""
                         editIconId = "local_drink"
+                        editColorId = "blue"
                     }
                 ) {
                     Text("Cancel")
@@ -345,43 +439,51 @@ fun ListItemCard(
                 MaterialTheme.colorScheme.surface
         )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconPreview(
-                iconId = item.iconId,
-                size = 24.dp,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            Text(
-                text = item.text,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f)
-            )
-            
-            Row {
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit item",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Color indicator
+                ColorPreview(
+                    colorId = item.colorId,
+                    size = 32.dp
+                )
                 
-                IconButton(onClick = onRemove) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Remove item",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                IconPreview(
+                    iconId = item.iconId,
+                    size = 24.dp,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                Text(
+                    text = item.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Row {
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit item",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    IconButton(onClick = onRemove) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Remove item",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
-        }
     }
 }

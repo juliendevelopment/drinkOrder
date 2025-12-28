@@ -19,6 +19,9 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
     private val _selectedIconId = MutableStateFlow("local_drink")
     val selectedIconId: StateFlow<String> = _selectedIconId.asStateFlow()
     
+    private val _selectedColorId = MutableStateFlow("blue")
+    val selectedColorId: StateFlow<String> = _selectedColorId.asStateFlow()
+    
     init {
         loadItems()
     }
@@ -35,11 +38,20 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
         _selectedIconId.value = iconId
     }
     
+    fun updateSelectedColorId(colorId: String) {
+        _selectedColorId.value = colorId
+    }
+    
     fun addItem() {
         if (_newItemText.value.isNotBlank()) {
-            _items.value = repository.addItem(_newItemText.value.trim(), _selectedIconId.value)
+            _items.value = repository.addItem(
+                text = _newItemText.value.trim(),
+                iconId = _selectedIconId.value,
+                colorId = _selectedColorId.value
+            )
             _newItemText.value = ""
             _selectedIconId.value = "local_drink" // Reset to default
+            _selectedColorId.value = "blue" // Reset to default
         }
     }
     
@@ -51,8 +63,8 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
         _items.value = repository.reorderItems(newOrder)
     }
     
-    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null) {
-        _items.value = repository.updateItem(itemId, newText, newIconId)
+    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null, newColorId: String? = null) {
+        _items.value = repository.updateItem(itemId, newText, newIconId, newColorId)
     }
 }
 

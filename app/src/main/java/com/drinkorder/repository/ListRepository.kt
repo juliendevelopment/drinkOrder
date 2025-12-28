@@ -25,10 +25,22 @@ class ListRepository(context: Context) {
         val itemsJson = sharedPreferences.getString(ITEMS_KEY, "[]")
         return try {
             val items = json.decodeFromString<List<ListItem>>(itemsJson ?: "[]")
-            // Migration: Add default iconId to items that don't have one
+            // Migration: Add default iconId and colorId to items that don't have them
             val migratedItems = items.map { item ->
-                if (item.iconId.isEmpty()) {
-                    item.copy(iconId = "local_drink")
+                val needsIconMigration = item.iconId.isEmpty()
+                val needsColorMigration = try {
+                    // Check if colorId field exists by attempting to access it
+                    item.colorId.isEmpty()
+                } catch (e: Exception) {
+                    // colorId field doesn't exist yet, needs migration
+                    true
+                }
+                
+                if (needsIconMigration || needsColorMigration) {
+                    item.copy(
+                        iconId = if (needsIconMigration) "local_drink" else item.iconId,
+                        colorId = if (needsColorMigration) "blue" else item.colorId
+                    )
                 } else {
                     item
                 }
@@ -51,13 +63,14 @@ class ListRepository(context: Context) {
             .apply()
     }
     
-    fun addItem(text: String, iconId: String = "local_drink"): List<ListItem> {
+    fun addItem(text: String, iconId: String = "local_drink", colorId: String = "blue"): List<ListItem> {
         val currentItems = getItems().toMutableList()
         val newItem = ListItem(
             id = UUID.randomUUID().toString(),
             text = text,
             order = currentItems.size,
-            iconId = iconId
+            iconId = iconId,
+            colorId = colorId
         )
         currentItems.add(newItem)
         saveItems(currentItems)
@@ -83,7 +96,7 @@ class ListRepository(context: Context) {
         return reorderedItems
     }
     
-    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null): List<ListItem> {
+    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null, newColorId: String? = null): List<ListItem> {
         val currentItems = getItems().toMutableList()
         val itemIndex = currentItems.indexOfFirst { it.id == itemId }
         
@@ -91,7 +104,8 @@ class ListRepository(context: Context) {
             val currentItem = currentItems[itemIndex]
             val updatedItem = currentItem.copy(
                 text = newText ?: currentItem.text,
-                iconId = newIconId ?: currentItem.iconId
+                iconId = newIconId ?: currentItem.iconId,
+                colorId = newColorId ?: currentItem.colorId
             )
             currentItems[itemIndex] = updatedItem
             saveItems(currentItems)

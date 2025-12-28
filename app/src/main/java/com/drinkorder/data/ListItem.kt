@@ -7,5 +7,6 @@ data class ListItem(
     val id: String,
     val text: String,
     val order: Int,
-    val iconId: String = "local_drink" // Default icon for drinks
+    val iconId: String = "local_drink", // Default icon for drinks
+    val colorId: String = "blue" // Default color
 )
