@@ -57,15 +57,15 @@ jobs:
           ./app/build/outputs/apk/release/app-release-unsigned.apk#"DrinkOrder v${VERSION_NAME} - Release APK (unsigned)" \
           --title "DrinkOrder v${VERSION_NAME}" \
           --notes "## What's New in v${VERSION_NAME}
-
-### 📱 APK Downloads
-- **Debug APK**: For testing and development
-- **Release APK**: Production build (unsigned)
-
-### Installation
-1. Download the appropriate APK file
-2. Enable \"Install from Unknown Sources\" in your Android settings
-3. Install the APK file
-
-### Changes
-_Add your changelog here_"
+        
+        ### APK Downloads
+        - Debug APK: For testing and development
+        - Release APK: Production build (unsigned)
+        
+        ### Installation
+        1. Download the appropriate APK file
+        2. Enable Install from Unknown Sources in your Android settings
+        3. Install the APK file
+        
+        ### Changes
+        Add your changelog here"
