@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drinkorder.data.ListItem
 import com.drinkorder.repository.ListRepository
 import com.drinkorder.ui.theme.DrinkOrderTheme
+import com.drinkorder.ui.components.IconPreview
 import com.drinkorder.viewmodel.GridViewModel
 import com.drinkorder.viewmodel.GridViewModelFactory
 
@@ -71,7 +72,7 @@ fun GridScreen(repository: ListRepository) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Order Items",
+                text = "Order Drinks",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -127,19 +128,43 @@ fun GridScreen(repository: ListRepository) {
             }
         }
         
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(items) { item ->
-                GridItemCard(
-                    item = item,
-                    count = itemCounts[item.id] ?: 0,
-                    onIncrement = { viewModel.incrementItem(item.id) },
-                    onDecrement = { viewModel.decrementItem(item.id) }
-                )
+        if (items.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No drinks available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Add drinks in the list view first",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(items) { item ->
+                    GridItemCard(
+                        item = item,
+                        count = itemCounts[item.id] ?: 0,
+                        onIncrement = { viewModel.incrementItem(item.id) },
+                        onDecrement = { viewModel.decrementItem(item.id) }
+                    )
+                }
             }
         }
     }
@@ -159,33 +184,58 @@ fun GridItemCard(
             .aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (count > 0) 
+                MaterialTheme.colorScheme.primaryContainer
+            else 
+                MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (count > 0) 6.dp else 4.dp
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Icon at the top
+            IconPreview(
+                iconId = item.iconId,
+                size = 40.dp,
+                tint = if (count > 0)
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
+                    MaterialTheme.colorScheme.primary
+            )
+            
+            // Drink name
             Text(
                 text = item.text,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
-                maxLines = 2
+                maxLines = 2,
+                color = if (count > 0)
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
             )
             
+            // Count display
             Text(
                 text = count.toString(),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = if (count > 0)
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
+                    MaterialTheme.colorScheme.primary
             )
             
+            // Increment/Decrement buttons
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
@@ -195,17 +245,37 @@ fun GridItemCard(
                     onClick = onDecrement,
                     enabled = count > 0,
                     modifier = Modifier.size(36.dp),
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (count > 0)
+                            MaterialTheme.colorScheme.secondary
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
-                    Text("-", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        "-", 
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = if (count > 0)
+                            MaterialTheme.colorScheme.onSecondary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 
                 Button(
                     onClick = onIncrement,
                     modifier = Modifier.size(36.dp),
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Text("+", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        "+", 
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }

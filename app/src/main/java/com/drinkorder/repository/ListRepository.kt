@@ -24,8 +24,22 @@ class ListRepository(context: Context) {
     fun getItems(): List<ListItem> {
         val itemsJson = sharedPreferences.getString(ITEMS_KEY, "[]")
         return try {
-            json.decodeFromString<List<ListItem>>(itemsJson ?: "[]")
+            val items = json.decodeFromString<List<ListItem>>(itemsJson ?: "[]")
+            // Migration: Add default iconId to items that don't have one
+            val migratedItems = items.map { item ->
+                if (item.iconId.isEmpty()) {
+                    item.copy(iconId = "local_drink")
+                } else {
+                    item
+                }
+            }
+            // Save migrated items if any changes were made
+            if (migratedItems != items) {
+                saveItems(migratedItems)
+            }
+            migratedItems
         } catch (e: Exception) {
+            // Handle legacy format or corrupted data
             emptyList()
         }
     }
@@ -37,12 +51,13 @@ class ListRepository(context: Context) {
             .apply()
     }
     
-    fun addItem(text: String): List<ListItem> {
+    fun addItem(text: String, iconId: String = "local_drink"): List<ListItem> {
         val currentItems = getItems().toMutableList()
         val newItem = ListItem(
             id = UUID.randomUUID().toString(),
             text = text,
-            order = currentItems.size
+            order = currentItems.size,
+            iconId = iconId
         )
         currentItems.add(newItem)
         saveItems(currentItems)
@@ -66,6 +81,23 @@ class ListRepository(context: Context) {
         }
         saveItems(reorderedItems)
         return reorderedItems
+    }
+    
+    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null): List<ListItem> {
+        val currentItems = getItems().toMutableList()
+        val itemIndex = currentItems.indexOfFirst { it.id == itemId }
+        
+        if (itemIndex != -1) {
+            val currentItem = currentItems[itemIndex]
+            val updatedItem = currentItem.copy(
+                text = newText ?: currentItem.text,
+                iconId = newIconId ?: currentItem.iconId
+            )
+            currentItems[itemIndex] = updatedItem
+            saveItems(currentItems)
+        }
+        
+        return currentItems
     }
     
     fun getItemCounts(): Map<String, Int> {

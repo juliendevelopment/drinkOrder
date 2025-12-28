@@ -16,6 +16,9 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
     private val _newItemText = MutableStateFlow("")
     val newItemText: StateFlow<String> = _newItemText.asStateFlow()
     
+    private val _selectedIconId = MutableStateFlow("local_drink")
+    val selectedIconId: StateFlow<String> = _selectedIconId.asStateFlow()
+    
     init {
         loadItems()
     }
@@ -28,10 +31,15 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
         _newItemText.value = text
     }
     
+    fun updateSelectedIconId(iconId: String) {
+        _selectedIconId.value = iconId
+    }
+    
     fun addItem() {
         if (_newItemText.value.isNotBlank()) {
-            _items.value = repository.addItem(_newItemText.value.trim())
+            _items.value = repository.addItem(_newItemText.value.trim(), _selectedIconId.value)
             _newItemText.value = ""
+            _selectedIconId.value = "local_drink" // Reset to default
         }
     }
     
@@ -41,6 +49,10 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
     
     fun reorderItems(newOrder: List<ListItem>) {
         _items.value = repository.reorderItems(newOrder)
+    }
+    
+    fun updateItem(itemId: String, newText: String? = null, newIconId: String? = null) {
+        _items.value = repository.updateItem(itemId, newText, newIconId)
     }
 }
 
