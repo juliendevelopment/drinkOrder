@@ -8,19 +8,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drinkorder.data.ListItem
+import com.drinkorder.data.DrinkColorDatabase
 import com.drinkorder.repository.ListRepository
 import com.drinkorder.ui.theme.DrinkOrderTheme
 import com.drinkorder.ui.components.IconPreview
@@ -178,19 +183,26 @@ fun GridItemCard(
     onDecrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Get the color for this item
+    val drinkColor = DrinkColorDatabase.getColorById(item.colorId)?.color
+        ?: DrinkColorDatabase.getColorById("blue")!!.color // Fallback to blue if color not found
+    
+    // Calculate text color for proper contrast against the drink color
+    // Use white text for dark colors, black text for light colors
+    val isLightColor = (drinkColor.red + drinkColor.green + drinkColor.blue) / 3 > 0.5f
+    val textColor = if (isLightColor) Color.Black else Color.White
+    val iconTint = textColor
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (count > 0) 
-                MaterialTheme.colorScheme.primaryContainer
-            else 
-                MaterialTheme.colorScheme.surfaceVariant
+            containerColor = drinkColor // Use the drink's assigned color as background
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (count > 0) 6.dp else 4.dp
+            defaultElevation = if (count > 0) 8.dp else 4.dp
         )
     ) {
         Column(
@@ -204,10 +216,7 @@ fun GridItemCard(
             IconPreview(
                 iconId = item.iconId,
                 size = 40.dp,
-                tint = if (count > 0)
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else
-                    MaterialTheme.colorScheme.primary
+                tint = iconTint
             )
             
             // Drink name
@@ -218,10 +227,7 @@ fun GridItemCard(
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
                 maxLines = 2,
-                color = if (count > 0)
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                color = textColor
             )
             
             // Count display
@@ -229,10 +235,7 @@ fun GridItemCard(
                 text = count.toString(),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (count > 0)
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else
-                    MaterialTheme.colorScheme.primary
+                color = textColor
             )
             
             // Increment/Decrement buttons
@@ -248,18 +251,16 @@ fun GridItemCard(
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (count > 0)
-                            MaterialTheme.colorScheme.secondary
+                            Color.Black.copy(alpha = 0.2f)
                         else
-                            MaterialTheme.colorScheme.surfaceVariant
+                            Color.Gray.copy(alpha = 0.3f),
+                        disabledContainerColor = Color.Gray.copy(alpha = 0.2f)
                     )
                 ) {
                     Text(
                         "-", 
                         style = MaterialTheme.typography.headlineSmall,
-                        color = if (count > 0)
-                            MaterialTheme.colorScheme.onSecondary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        color = textColor
                     )
                 }
                 
@@ -268,13 +269,13 @@ fun GridItemCard(
                     modifier = Modifier.size(36.dp),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = Color.Black.copy(alpha = 0.3f)
                     )
                 ) {
                     Text(
                         "+", 
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = textColor
                     )
                 }
             }
