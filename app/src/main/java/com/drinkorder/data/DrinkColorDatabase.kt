@@ -120,6 +120,13 @@ object DrinkColorDatabase {
             category = "Earth"
         ),
         DrinkColorItem(
+            id = "copper",
+            color = Color(0xFFB5651D),
+            displayName = "Copper",
+            searchKeywords = listOf("copper", "special beer", "amber ale", "brown ale", "trappist", "abbey", "bière"),
+            category = "Earth"
+        ),
+        DrinkColorItem(
             id = "grey",
             color = Color(0xFF9E9E9E),
             displayName = "Grey",
