@@ -118,22 +118,7 @@ fun GridScreen(repository: ListRepository) {
         )
         
         if (orderSummary.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Text(
-                    text = orderSummary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(12.dp),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
+            OrderSummaryCard(summary = orderSummary)
         }
         
         if (items.isEmpty()) {
@@ -172,6 +157,52 @@ fun GridScreen(repository: ListRepository) {
                         onIncrement = { viewModel.incrementItem(item.id) },
                         onDecrement = { viewModel.decrementItem(item.id) }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OrderSummaryCard(summary: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        // Larger text, split over two columns so the grid buttons stay reachable
+        val lines = summary.lines()
+        val columns = if (lines.size > 3) lines.chunked((lines.size + 1) / 2) else listOf(lines)
+        Row(modifier = Modifier.padding(12.dp)) {
+            columns.forEach { columnLines ->
+                Column(modifier = Modifier.weight(1f)) {
+                    columnLines.forEach { line ->
+                        // Only the name is truncated, so the count always stays visible
+                        Row(modifier = Modifier.padding(end = 8.dp)) {
+                            Text(
+                                text = line.substringBeforeLast(":"),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            if (":" in line) {
+                                Text(
+                                    text = ":" + line.substringAfterLast(":"),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
