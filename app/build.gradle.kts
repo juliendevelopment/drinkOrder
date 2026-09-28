@@ -12,8 +12,10 @@ android {
         applicationId = "com.drinkorder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "2.4"
+        // The release workflow passes these from the git tag (v2.5 -> 2.5 / 20500), and
+        // Android only accepts an update if its versionCode is higher than the installed one
+        versionCode = System.getenv("VERSION_CODE")?.toInt() ?: 20500
+        versionName = System.getenv("VERSION_NAME") ?: "2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
