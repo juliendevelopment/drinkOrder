@@ -8,10 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
@@ -19,9 +18,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drinkorder.data.ListItem
@@ -29,6 +31,7 @@ import com.drinkorder.data.DrinkColorDatabase
 import com.drinkorder.repository.ListRepository
 import com.drinkorder.ui.theme.DrinkOrderTheme
 import com.drinkorder.ui.components.IconPreview
+import com.drinkorder.ui.components.readableContentColor
 import com.drinkorder.viewmodel.GridViewModel
 import com.drinkorder.viewmodel.GridViewModelFactory
 
@@ -183,15 +186,14 @@ fun GridItemCard(
     onDecrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
+
     // Get the color for this item
     val drinkColor = DrinkColorDatabase.getColorById(item.colorId)?.color
         ?: DrinkColorDatabase.getColorById("blue")!!.color // Fallback to blue if color not found
     
-    // Calculate text color for proper contrast against the drink color
     // Use white text for dark colors, black text for light colors
-    val isLightColor = (drinkColor.red + drinkColor.green + drinkColor.blue) / 3 > 0.5f
-    val textColor = if (isLightColor) Color.Black else Color.White
-    val iconTint = textColor
+    val textColor = readableContentColor(drinkColor)
     
     Card(
         modifier = modifier
@@ -199,85 +201,84 @@ fun GridItemCard(
             .aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = drinkColor // Use the drink's assigned color as background
+            containerColor = drinkColor, // Use the drink's assigned color as background
+            contentColor = textColor
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (count > 0) 8.dp else 4.dp
         )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Icon at the top
-            IconPreview(
-                iconId = item.iconId,
-                size = 40.dp,
-                tint = iconTint
-            )
-            
-            // Drink name
-            Text(
-                text = item.text,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f),
-                maxLines = 2,
-                color = textColor
-            )
-            
-            // Count display
-            Text(
-                text = count.toString(),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = textColor
-            )
-            
-            // Increment/Decrement buttons
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Top 3/4: tapping anywhere adds one
+            Box(
+                modifier = Modifier
+                    .weight(3f)
+                    .fillMaxWidth()
+                    .clickable(onClickLabel = "Add one ${item.text}") {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onIncrement()
+                    }
             ) {
-                Button(
-                    onClick = onDecrement,
-                    enabled = count > 0,
-                    modifier = Modifier.size(36.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (count > 0)
-                            Color.Black.copy(alpha = 0.2f)
-                        else
-                            Color.Gray.copy(alpha = 0.3f),
-                        disabledContainerColor = Color.Gray.copy(alpha = 0.2f)
-                    )
+                Text(
+                    text = "+",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    IconPreview(
+                        iconId = item.iconId,
+                        size = 48.dp,
+                        tint = textColor
+                    )
+                    
                     Text(
-                        "-", 
-                        style = MaterialTheme.typography.headlineSmall,
+                        text = item.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                         color = textColor
                     )
-                }
-                
-                Button(
-                    onClick = onIncrement,
-                    modifier = Modifier.size(36.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black.copy(alpha = 0.3f)
-                    )
-                ) {
+                    
                     Text(
-                        "+", 
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = textColor
+                        text = count.toString(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (count > 0) textColor else textColor.copy(alpha = 0.5f)
                     )
                 }
+            }
+
+            // Bottom 1/4: full-width button to remove one
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = if (count > 0) 0.25f else 0.1f))
+                    .clickable(enabled = count > 0, onClickLabel = "Remove one ${item.text}") {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onDecrement()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "−",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (count > 0) textColor else textColor.copy(alpha = 0.35f)
+                )
             }
         }
     }

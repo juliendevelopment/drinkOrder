@@ -2,6 +2,7 @@ package com.drinkorder.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.drinkorder.data.DrinkIconItem
 import com.drinkorder.data.ListItem
 import com.drinkorder.repository.ListRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,8 +35,13 @@ class ListViewModel(private val repository: ListRepository) : ViewModel() {
         _newItemText.value = text
     }
     
-    fun updateSelectedIconId(iconId: String) {
-        _selectedIconId.value = iconId
+    // Picking a drink icon also applies its color, and its name when none was typed yet
+    fun selectDrink(iconItem: DrinkIconItem) {
+        _selectedIconId.value = iconItem.id
+        _selectedColorId.value = iconItem.defaultColorId
+        if (_newItemText.value.isBlank()) {
+            _newItemText.value = iconItem.displayName
+        }
     }
     
     fun updateSelectedColorId(colorId: String) {
