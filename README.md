@@ -2,10 +2,16 @@
 
 A simple and intuitive mobile app for managing drink orders and tracking item counts. Perfect for taking order 
 
+## 📸 Screenshot
+
+<p align="center">
+  <img src="docs/screenshots/order-grid.png" alt="Order grid with two drinks and the order summary" width="300">
+</p>
+
 ## ✨ Features
 
 ### 📱 Order Management
-- **Grid View**: Browse all available drinks in a clean 3-column grid layout
+- **Grid View**: Browse all available drinks in a clean 2-column grid layout
 - **Easy Ordering**: Tap + and - buttons to adjust quantities for each item
 - **Live Counter**: See real-time count updates for individual items and total order
 - **Order Summary**: View a bullet-point list of all selected items with quantities
